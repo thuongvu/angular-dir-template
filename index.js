@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
-// var ASQ = require('asynquence');
 var q = require('q');
-require('asynquence-contrib');
 var _ = require('underscore');
 var program = require("commander");
 
@@ -33,7 +31,6 @@ var readConfig = function() {
   return defer.promise;
 };
 
-
 var config = function() {
   return readConfig().then(function(a, b) {
     var config = JSON.parse(a.toString());
@@ -43,14 +40,38 @@ var config = function() {
 
 var configAndOptions = function() {
   var both = q.all([config(), template()])
-    .done(function(a) {
-      console.log("a", a);
+    .done(function(configAndTemplate) {
+      var jsonConfig = configAndTemplate[0];
+      var template = configAndTemplate[1].toString();
+
+      var directiveIsoScope = JSON.stringify(_.reduce(program.scopeProps, function(memo, prop) {
+        memo[prop] = '=';
+        return memo;
+      }, {}));
+
+      var options = {
+        moduleName: jsonConfig.module,
+        nameSpace: jsonConfig.nameSpace,
+        templateUrl: jsonConfig.baseTemplateUrl + program.name + '/' + program.name + '.html',
+        scopeProps: directiveIsoScope,
+        directiveName: program.name,
+        restrict: program.restrict.toUpperCase()
+      }
+      hydrateTemplate(template, options);
     });
-    console.log("both", both);
 };
 
-// _.extend({name: 'moe'}, {age: 50});
-// => {name: 'moe', age: 50}
+
+
+// values, using <%= … %>
+// JavaScript code, with <% … %>
+// interpolate a value, and have it be HTML-escaped, use <%- … %>
+
+var hydrateTemplate = function(templateString, options) {
+  var compiled = _.template(templateString);
+  console.log("compiled(options)", compiled(options));
+  return compiled(options);
+};
 
 var readTemplate = function() {
   var defer = q.defer();

@@ -1,19 +1,14 @@
 'use strict';
 
-angular.module('module')
-  .directive('name', function() {
+angular.module("<%= moduleName %>")
+  .directive("<%= directiveName %>", function() {
     return {
-      templateUrl: '',
+      templateUrl: "<%= templateUrl %>",
       controller: function($scope) {},
-      scope: {},
-      restrict: 'EA',
+      scope: <%= scopeProps %>,
+      restrict: "<%= restrict %>",
       link: function postLink(scope, element, attrs) {
 
       } // link
     }; // return
   }); // directive
-
-
-// values, using <%= … %>
-// JavaScript code, with <% … %>
-// interpolate a value, and have it be HTML-escaped, use <%- … %>

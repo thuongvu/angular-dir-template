@@ -49,12 +49,13 @@ var makeDirectory = function(dir) {
 }
 
 var configAndOptions = function() {
-  var renderedTemplate;
+  var renderedDirectiveTemplate, renderedTestSpecTemplate;
 
-  var both = q.all([config(), template()])
+  var both = q.all([config(), template('./templates/directiveTemplate.js'), template('./templates/testSpecTemplate.js')])
     .then(function(configAndTemplate) {
       var jsonConfig = configAndTemplate[0];
-      var template = configAndTemplate[1].toString();
+      var directiveTemplate = configAndTemplate[1].toString();
+      var testSpecTemplate = configAndTemplate[2].toString();
 
       var directiveIsoScope = JSON.stringify(_.reduce(program.scopeProps, function(memo, prop) {
         memo[prop] = '=';
@@ -66,27 +67,45 @@ var configAndOptions = function() {
         nameSpace: jsonConfig.nameSpace,
         templateUrl: jsonConfig.baseTemplateUrl + program.name + '/' + program.name + '.html',
         scopeProps: directiveIsoScope,
+        directiveIsoScope: directiveIsoScope,
+        scopePropsKeys: _.keys(JSON.parse(directiveIsoScope)),
         directiveName: program.name,
         restrict: program.restrict.toUpperCase(),
-        directory: jsonConfig.baseTemplateUrl + program.name
+        directory: jsonConfig.baseTemplateUrl + program.name,
+        testSpecDirectory: jsonConfig.baseTestDirectory + program.name
       }
-
-      renderedTemplate = hydrateTemplate(template, options);
+      renderedDirectiveTemplate = hydrateTemplate(directiveTemplate, options);
+      renderedTestSpecTemplate = hydrateTemplate(testSpecTemplate, options);
       return options;
     }).then(function(options) {
-      return mkdirp(options.directory, function(err) {
-        if (err) {
-          return err;
-        } else {
-          var jsFilePath = options.directory + '/' + options.directiveName + '.js';
-          fs.writeFile(jsFilePath, renderedTemplate);
-        }
-      });
+      // mkdirp(options.directory, function(err) {
+      //   if (err) {
+      //     return err;
+      //   } else {
+      //     var jsFilePath = options.directory + '/' + options.directiveName + '.js';
+      //     fs.writeFile(jsFilePath, renderedDirectiveTemplate);
+      //     // var testSpecPath = options.testSpecDirectory + '/' + options.directiveName + '.js';
+      //     // fs.writeFile(testSpecPath, renderedTestSpecTemplate);
+      //   }
+      // });
+      makeDirectoryThenWrite(options.directory, options.directiveName, '.js', renderedDirectiveTemplate);
+      makeDirectoryThenWrite(options.testSpecDirectory, options.directiveName, '.js', renderedTestSpecTemplate);
     });
 };
 
 
-
+var makeDirectoryThenWrite = function(directory, directiveName, ext, renderedTemplate) {
+  mkdirp(directory, function(err) {
+    if (err) {
+      return err;
+    } else {
+      var filePath = directory + '/' + directiveName + ext;
+      fs.writeFile(filePath, renderedTemplate);
+      // var testSpecPath = options.testSpecDirectory + '/' + options.directiveName + '.js';
+      // fs.writeFile(testSpecPath, renderedTestSpecTemplate);
+    }
+  });
+};
 
 // values, using <%= … %>
 // JavaScript code, with <% … %>
@@ -98,9 +117,9 @@ var hydrateTemplate = function(templateString, options) {
   return compiled(options);
 };
 
-var readTemplate = function() {
+var readTemplate = function(pathFile) {
   var defer = q.defer();
-  fs.readFile('./templates/directiveTemplate.js', function(err, template) {
+  fs.readFile(pathFile, function(err, template) {
     if (err) {
       defer.reject();
     } else {
@@ -109,8 +128,8 @@ var readTemplate = function() {
   });
   return defer.promise;
 }
-var template = function() {
-  return readTemplate().then(function(templ, err) {
+var template = function(pathFile) {
+  return readTemplate(pathFile).then(function(templ, err) {
     return templ.toString();
   });
 };

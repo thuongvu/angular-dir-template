@@ -1,5 +1,6 @@
 {
   "module": "sampleModuleName",
   "nameSpace": "",
-  "baseTemplateUrl": "directives/"
+  "baseTemplateUrl": "directives/",
+  "baseTestDirectory": "test/spec/"
 }

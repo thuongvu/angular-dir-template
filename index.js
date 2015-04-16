@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
+var mkdirp = require('mkdirp');
 var q = require('q');
 var _ = require('underscore');
 var program = require("commander");
+var path = require('path');
 
 function list(val) {
   return val.split(',');
@@ -14,10 +16,6 @@ program
   .option('--name [name]', 'Specify the name of the directive')
   .option('--restrict [restrictions]', 'Restrict to element, attribute, class')
   .parse(process.argv);
-
-// if (program.scopeProps) console.log(' scopeProps: %j', program.scopeProps);
-// if (program.name) console.log('name: ', program.name);
-// if (program.restrict) console.log('restrict to: ', program.restrict);
 
 var readConfig = function() {
   var defer = q.defer();
@@ -38,9 +36,23 @@ var config = function() {
   });
 };
 
+var makeDirectory = function(dir) {
+  var defer = q.defer();
+  fs.mkdir(dir, function(err, dir) {
+    if (err) {
+      defer.reject();
+    } else {
+      defer.resolve(dir)
+    }
+  });
+  return defer.promise;
+}
+
 var configAndOptions = function() {
+  var renderedTemplate;
+
   var both = q.all([config(), template()])
-    .done(function(configAndTemplate) {
+    .then(function(configAndTemplate) {
       var jsonConfig = configAndTemplate[0];
       var template = configAndTemplate[1].toString();
 
@@ -55,11 +67,24 @@ var configAndOptions = function() {
         templateUrl: jsonConfig.baseTemplateUrl + program.name + '/' + program.name + '.html',
         scopeProps: directiveIsoScope,
         directiveName: program.name,
-        restrict: program.restrict.toUpperCase()
+        restrict: program.restrict.toUpperCase(),
+        directory: jsonConfig.baseTemplateUrl + program.name
       }
-      hydrateTemplate(template, options);
+
+      renderedTemplate = hydrateTemplate(template, options);
+      return options;
+    }).then(function(options) {
+      return mkdirp(options.directory, function(err) {
+        if (err) {
+          return err;
+        } else {
+          var jsFilePath = options.directory + '/' + options.directiveName + '.js';
+          fs.writeFile(jsFilePath, renderedTemplate);
+        }
+      });
     });
 };
+
 
 
 
@@ -69,7 +94,7 @@ var configAndOptions = function() {
 
 var hydrateTemplate = function(templateString, options) {
   var compiled = _.template(templateString);
-  console.log("compiled(options)", compiled(options));
+  // console.log("compiled(options)", compiled(options));
   return compiled(options);
 };
 

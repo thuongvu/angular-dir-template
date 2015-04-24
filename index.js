@@ -62,12 +62,17 @@ var configAndOptions = function() {
         return memo;
       }, {}));
 
+      var specScopeProps = _.map(program.scopeProps, function(scopeProp) {
+        return 'scope.' + scopeProp + ';'
+      });
+
       var options = {
         moduleName: jsonConfig.module,
         nameSpace: jsonConfig.nameSpace,
         templateUrl: jsonConfig.baseTemplateUrl + program.name + '/' + program.name + '.html',
         scopeProps: directiveIsoScope,
         directiveIsoScope: directiveIsoScope,
+        specScopeProps: specScopeProps,
         scopePropsKeys: _.keys(JSON.parse(directiveIsoScope)),
         directiveName: program.name,
         restrict: program.restrict.toUpperCase(),
@@ -78,16 +83,6 @@ var configAndOptions = function() {
       renderedTestSpecTemplate = hydrateTemplate(testSpecTemplate, options);
       return options;
     }).then(function(options) {
-      // mkdirp(options.directory, function(err) {
-      //   if (err) {
-      //     return err;
-      //   } else {
-      //     var jsFilePath = options.directory + '/' + options.directiveName + '.js';
-      //     fs.writeFile(jsFilePath, renderedDirectiveTemplate);
-      //     // var testSpecPath = options.testSpecDirectory + '/' + options.directiveName + '.js';
-      //     // fs.writeFile(testSpecPath, renderedTestSpecTemplate);
-      //   }
-      // });
       makeDirectoryThenWrite(options.directory, options.directiveName, '.js', renderedDirectiveTemplate);
       makeDirectoryThenWrite(options.testSpecDirectory, options.directiveName, '.js', renderedTestSpecTemplate);
     });

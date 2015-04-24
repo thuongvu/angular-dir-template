@@ -8,9 +8,9 @@ describe('Directive: <%= directiveName %>', function () {
   beforeEach(inject(function ($rootScope, _$compile_) {
     $compile = _$compile_;
     scope = $rootScope.$new();
-    <% _.each(scopePropsKeys, function(scopePropsKey) {
-      return "scope." + scopePropsKey + ';';
-    }) %>
+    <% _.each(specScopeProps, function(prop) {
+      %><%= prop %> <% 
+    }); %>
     element = '<<%= directiveName %>></<%= directiveName %>>';
     element = $compile(element)(scope);
     scope.$digest();

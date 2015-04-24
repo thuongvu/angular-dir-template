@@ -48,7 +48,7 @@ var makeDirectory = function(dir) {
   return defer.promise;
 }
 
-var configAndOptions = function() {
+var main = function() {
   var renderedDirectiveTemplate, renderedTestSpecTemplate;
 
   var both = q.all([config(), template('./templates/directiveTemplate.js'), template('./templates/testSpecTemplate.js')])
@@ -96,19 +96,12 @@ var makeDirectoryThenWrite = function(directory, directiveName, ext, renderedTem
     } else {
       var filePath = directory + '/' + directiveName + ext;
       fs.writeFile(filePath, renderedTemplate);
-      // var testSpecPath = options.testSpecDirectory + '/' + options.directiveName + '.js';
-      // fs.writeFile(testSpecPath, renderedTestSpecTemplate);
     }
   });
 };
 
-// values, using <%= … %>
-// JavaScript code, with <% … %>
-// interpolate a value, and have it be HTML-escaped, use <%- … %>
-
 var hydrateTemplate = function(templateString, options) {
   var compiled = _.template(templateString);
-  // console.log("compiled(options)", compiled(options));
   return compiled(options);
 };
 
@@ -129,25 +122,4 @@ var template = function(pathFile) {
   });
 };
 
-console.log("configAndOptions()", configAndOptions());
-
-
-
-
-
-// 1. take input
-// 2. read json
-// 3. fill templates
-// 4. put in respective parts in filesystem
-
-
-   // read json
-   // json will have config
-     // app name
-     // base directory for templateUrl
-    
-  // options
-    // scope
-      // default true, if flag is passed, false
-
-// node index.js --scopeProps=hello,world --restrict=ea --name=dirname
+main();

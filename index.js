@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// node index.js --scopeProps=foo,bar --restrict=ea --name=myAwesomeDirective
+
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var q = require('q');

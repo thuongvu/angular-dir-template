@@ -18,6 +18,8 @@ program
   .option('--name [name]', 'Specify the name of the directive')
   .option('--restrict [restrictions]', 'Restrict to element, attribute, class')
   .option('--skipTest', 'Skip tests')
+  .option('--dir [dir]', 'Directory specified to create html, css, js directive files')
+  .option('--testDir [testDir]', 'Directory specified to create test spec file')
   .parse(process.argv);
 
 var readConfig = function() {
@@ -69,6 +71,14 @@ var main = function() {
         return 'scope.' + scopeProp + ';'
       });
 
+      var directory = function(optionsDir, defaultDir) {
+        if (optionsDir) {
+          return optionsDir + '/' + program.name;
+        } else {
+          return defaultDir;
+        }
+      }
+
       var options = {
         moduleName: jsonConfig.module,
         nameSpace: jsonConfig.nameSpace,
@@ -79,8 +89,8 @@ var main = function() {
         scopePropsKeys: _.keys(JSON.parse(directiveIsoScope)),
         directiveName: program.name,
         restrict: program.restrict.toUpperCase(),
-        directory: jsonConfig.baseTemplateUrl + program.name,
-        testSpecDirectory: jsonConfig.baseTestDirectory + program.name
+        directory: directory(program.dir, jsonConfig.baseTemplateUrl + program.name),
+        testSpecDirectory: directory(program.testDir, jsonConfig.baseTestDirectory + program.name)
       }
       renderedDirectiveTemplate = hydrateTemplate(directiveTemplate, options);
       renderedTestSpecTemplate = hydrateTemplate(testSpecTemplate, options);

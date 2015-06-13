@@ -17,6 +17,7 @@ program
   .option('--scopeProps <items>', 'A list', list)
   .option('--name [name]', 'Specify the name of the directive')
   .option('--restrict [restrictions]', 'Restrict to element, attribute, class')
+  .option('--skipTest', 'Skip tests')
   .parse(process.argv);
 
 var readConfig = function() {
@@ -86,7 +87,11 @@ var main = function() {
       return options;
     }).then(function(options) {
       makeDirectoryThenWrite(options.directory, options.directiveName, '.js', renderedDirectiveTemplate);
-      makeDirectoryThenWrite(options.testSpecDirectory, options.directiveName, '.js', renderedTestSpecTemplate);
+      makeDirectoryThenWrite(options.directory, options.directiveName, '.html', '<div></div>');
+      makeDirectoryThenWrite(options.directory, options.directiveName, '.css', '');
+      if (!program.skipTest) {
+        makeDirectoryThenWrite(options.testSpecDirectory, options.directiveName, '.js', renderedTestSpecTemplate);
+      }
     });
 };
 

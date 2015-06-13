@@ -124,4 +124,4 @@ var template = function(pathFile) {
   });
 };
 
-main();
+module.exports = main();
